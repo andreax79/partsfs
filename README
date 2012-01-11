@@ -1,0 +1,43 @@
+Partitions filesystem (partsfs) kernel module.
+PartsFS allows mounting a disk image as a filesystem.
+
+Compile:
+
+$ make
+
+Simple, isn't it? :-)
+
+Usage (as root):
+
+$ insmod partfs.ko
+$ mount -o loop -t partsfs DISK_IMAGE TARGET_DIRECTORY
+
+Example:
+
+$ fdisk -l freedos-img/c.img 
+
+Disk c.img: 10 MB, 10653696 bytes
+4 heads, 17 sectors/track, 306 cylinders, total 20808 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0xe3657373
+
+Device Boot      Start         End      Blocks   Id  System
+c.img1   *          17       20484       10234    1  FAT12
+
+$ mount -o loop -t partsfs freedos-img/c.img t
+
+$ ls -laih t
+      1 drwx------  2 root    root       0 2012-01-06 17:19 .
+3014683 drwx------ 15 andreax andreax 4.0K 2012-01-06 17:18 ..
+    101 -rw-------  1 root    root     10M 2012-01-06 17:19 1
+
+$ df t
+Filesystem           1K-blocks      Used Available Use% Mounted on
+/dev/loop0               10404     10404         0 100% /home/andreax/partsfs/t
+
+$ file t/1
+t/1: x86 boot sector, code offset 0x4c, sectors/cluster 8, root entries 512, sectors 20519 (volumes <=32 MB) , Media descriptor 0xf8, sectors/FAT 11, heads 4, hidden sectors 17, serial number 0x0, label: "           ", FAT (12 bit)
+
+ 
