@@ -27,7 +27,8 @@
 #define PARTSFS_ROOT_DIR_INODE             1
 #define PARTSFS_FIRST_PARTITION_INODE    100
 #define PARTSFS_MAX_NAME_LENGTH           16
-
+#define PARTSFS_DEFAULT_DIR_MODE        0555
+#define PARTSFS_DEFAULT_FILE_MODE       0600
 
 extern struct parsed_partitions *check_partition(struct gendisk *hd,
                         struct block_device *bdev);
@@ -55,6 +56,8 @@ static struct dentry *partsfs_mount(struct file_system_type *fs_type,
                         int flags, const char *dev_name, void *data);
 
 static void partsfs_kill_sb(struct super_block *sb);
+
+static int partsfs_show_options(struct seq_file *seq, struct vfsmount *mnt);
 
 
 static const struct file_operations partsfs_dir_operations = {
@@ -88,6 +91,7 @@ static const struct address_space_operations partsfs_file_aops = {
 
 static const struct super_operations partsfs_super_ops = {
         .statfs           = partsfs_statfs,
+        .show_options     = partsfs_show_options,
 };
 
 static struct file_system_type partsfs_fs_type = {
@@ -107,6 +111,13 @@ struct partsfs_state {
                 sector_t size;    /* Partition size, in sectors */
         } parts[DISK_MAX_PARTS];
         int number_of_partitions; /* Number of partitions */
+        int last_partition;       /* Last partition */
         sector_t sector_size;     /* Sector size */
         sector_t capacity;        /* The capacity of this drive, in 512-byte sectors */
+        /* Mount options */
+        uid_t option_uid;         /* The uid of all files */
+        gid_t option_gid;         /* The gid of all files */
+        umode_t option_mode;      /* The mode of all files */
 };
+
+static int parse_options(char *options, struct partsfs_state *state);
